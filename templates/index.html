@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Upload and Download</title>
+</head>
+<body>
+    <h1>File Upload and Download</h1>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div id="notification">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label for="file">Select a file to upload:</label>
+        <input type="file" name="file" id="file" required>
+        <br>
+        <input type="submit" value="Upload">
+    </form>
+    <br>
+    <a href="{{ url_for('download') }}">Download Files as ZIP</a>
+    
+
+    <script>
+        // Function to send a heartbeat request to the server
+        function sendHeartbeat() {
+            navigator.sendBeacon('/heartbeat');
+        }
+    
+        // Function to delete user folder on tab close
+        function deleteFolderOnTabClose() {
+            navigator.sendBeacon('/delete_folder');
+        }
+    
+        // Send a heartbeat every 60 seconds
+        setInterval(sendHeartbeat, 60000);
+    
+        // Add event listeners for visibility change
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') {
+                // Send an immediate heartbeat request when the tab is hidden
+                sendHeartbeat();
+            }
+        });
+    
+        // Add event listener for beforeunload
+        window.addEventListener('beforeunload', function() {
+            // Send an immediate heartbeat request when the user closes the tab
+            sendHeartbeat();
+
+            // Make a synchronous XMLHttpRequest to ensure the request is sent before the tab is closed
+            // var xhr = new XMLHttpRequest();
+            // xhr.open('POST', '/delete_folder', false); // false makes the request synchronous
+            // xhr.send();
+            
+            // setTimeout(deleteFolderOnTabClose, 6000);
+            navigator.sendBeacon('/delete_folder');
+        });
+    
+        // Add event listener for unload (when the tab is being closed)
+        // window.addEventListener('unload', function() {
+        //     // Delete user folder on tab close
+        //     sendHeartbeat();
+            
+        //     var xhr = new XMLHttpRequest();
+        //     xhr.open('POST', '/delete_folder', false);  // false makes the request synchronous
+        //     xhr.send();
+
+        //     setTimeout(deleteFolderOnTabClose, 1000);
+        // });
+    </script>
+    
+    
+</body>
+</html>
